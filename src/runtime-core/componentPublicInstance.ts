@@ -1,6 +1,7 @@
 const publicPropertiesMap = {
   $el: (i) => i.vnode.el
 }
+//将setup数据挂到render this上
 export const publicInstanceProxyHandlers = {
   get({_: instance}, key) {
     //setupState

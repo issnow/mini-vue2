@@ -1,6 +1,6 @@
-//生成组件实例
 import {publicInstanceProxyHandlers} from "./componentPublicInstance";
 
+//生成组件实例
 export function createComponentInstance(vnode) {
   const component = {
     vnode,

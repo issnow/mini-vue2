@@ -1,7 +1,8 @@
 import {createComponentInstance, setupComponent} from "./component";
 //@ts-ignore
-import {isObject} from "../shared";
+import {ShapeFlags} from "../shared/shapeFlags";
 
+//根据vnode和container渲染
 export function render(vnode, container) {
   //patch
   patch(vnode, container)
@@ -9,31 +10,39 @@ export function render(vnode, container) {
 
 function patch(vnode, container) {
   //去处理组件
+  //shapeFlags vnode-> flag
+  //string -> element
+  //object -> 组件
+  const {shapeFlag} = vnode
   //判断是不是element类型
-  if (typeof vnode.type === "string") {
+  if (shapeFlag & ShapeFlags.element) {
     processElement(vnode, container);
-  } else if (isObject(vnode.type)) {
+  } else if (shapeFlag & ShapeFlags.stateful_component) {
     processComponent(vnode, container)
   }
 }
 
+//处理元素类型
 function processElement(vnode, container) {
   //mount
   mountElement(vnode, container)
   //update
 }
 
+//处理组件类型
 function processComponent(vnode, container) {
   mountComponent(vnode, container)
 }
 
+//元素类型-mount阶段,构建dom,添加文本和属性,递归处理children
 function mountElement(vnode, container) {
   //element
   const el = vnode.el = document.createElement(vnode.type)
-  const {props, children} = vnode
-  if (typeof children === 'string') {
+  const {props, children, shapeFlag} = vnode
+  //children text 或者 array
+  if (shapeFlag & ShapeFlags.text_children) {
     el.textContent = children
-  } else if (Array.isArray(children)) {
+  } else if (shapeFlag & ShapeFlags.array_children) {
     mountChildren(children, el)
   }
   for (let prop in props) {
@@ -48,19 +57,21 @@ function mountChildren(children, container) {
   }
 }
 
+//组件类型-生成实例,处理数据
 function mountComponent(vnode, container) {
   const instance = createComponentInstance(vnode)
   setupComponent(instance)
   setupRenderEffect(instance, vnode, container)
 }
 
+//主要递归处理render内容,也就是subtree
 function setupRenderEffect(instance, vnode, container) {
   const {proxy} = instance
-  const substree = instance.render.call(proxy)
+  const subtree = instance.render.call(proxy)
 
   //vnode -> patch
   //vnode -> element -> mountElement
-  patch(substree, container)
+  patch(subtree, container)
   //element mount之后
-  vnode.el = substree.el
+  vnode.el = subtree.el
 }

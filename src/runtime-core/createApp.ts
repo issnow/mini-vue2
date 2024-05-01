@@ -1,6 +1,7 @@
 import {createVNode} from "./vnode";
 import {render} from "./renderer";
 
+//vue入口
 export function createApp(rootComponent) {
   return {
     mount(rootContainer) {
