@@ -1,10 +1,15 @@
-import {h} from '../../lib/guide-mini.vue.esm'
+import {h} from '../../lib/guide-mini-vue.esm.js'
 
-export const App = {
+const App = {
   //template
   render() {
     //ui
-    return h('div', 'hi,' + this.msg);
+    return h(
+      'div',
+      {id: 'box', class: ['c1', 'c2']},
+      //'hi,' + this.msg
+      [h('p', {class: 'p1'}, 'hi p1'), h('p', {class: 'p2'}, 'hi p2')]
+    );
   },
   setup() {
     //composition api
@@ -13,3 +18,4 @@ export const App = {
     }
   }
 }
+export default App;

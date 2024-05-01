@@ -1,5 +1,7 @@
 import typescript from '@rollup/plugin-typescript'
 import pkg from './package.json'
+
+let path = require('path')
 export default {
   input: 'src/index.js',
   output: [
@@ -7,11 +9,11 @@ export default {
     //2.esm
     {
       format: 'cjs',
-      file: pkg.main
+      file: path.resolve(pkg.main)
     },
     {
       format: 'es',
-      file: pkg.mudule
+      file: path.resolve(pkg.mudule)
     },
   ],
   plugins: [
