@@ -1,4 +1,4 @@
-import {h, renderSlots} from '../../lib/guide-mini-vue.esm.js'
+import {h, renderSlots, getCurrentInstance} from '../../lib/guide-mini-vue.esm.js'
 /*
  */
 const Foo = {
@@ -17,6 +17,7 @@ const Foo = {
       foo, renderSlots(this.$slots, 'body')])
   },
   setup() {
+    console.log(getCurrentInstance())
     return {}
   }
 }

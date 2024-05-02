@@ -15,7 +15,8 @@ export function createComponentInstance(vnode) {
     proxy: '',
     props: {},
     slots: {},
-    emit:()=>{},
+    emit: () => {
+    },
   }
   instance.emit = emit.bind(null, instance) as any
   return instance
@@ -37,11 +38,13 @@ function setupStatefulComponent(instance) {
     {_: instance}, publicInstanceProxyHandlers)
   const {setup} = Component
   if (setup) {
+    setCurrentInstance(instance)
     // function则是render函数 Object则是状态
     //将props传入
     const setupRes = setup(shallowReadonly(instance.props), {
-      emit:instance.emit
+      emit: instance.emit
     })
+    setCurrentInstance(null)
     handleSetupResult(instance, setupRes)
   }
 }
@@ -62,4 +65,14 @@ function finishComponentSetup(instance) {
   if (Component.render) {
     instance.render = Component.render
   }
+}
+
+let currentInstance = null
+
+export function getCurrentInstance() {
+  return currentInstance
+}
+
+export function setCurrentInstance(instance) {
+  currentInstance = instance
 }
