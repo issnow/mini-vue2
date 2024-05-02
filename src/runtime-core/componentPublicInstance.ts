@@ -4,9 +4,13 @@ const publicPropertiesMap = {
 //将setup数据挂到render this上
 export const publicInstanceProxyHandlers = {
   get({_: instance}, key) {
-    //setupState
-    if (key in instance.setupState) {
-      return instance.setupState[key]
+    //setupState props
+    const {setupState, props} = instance
+    const hasOwn = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key)
+    if (hasOwn(setupState, key)) {
+      return setupState[key]
+    } else if (hasOwn(props, key)) {
+      return props[key]
     }
     //key == $el
     //if(key === '$el') {

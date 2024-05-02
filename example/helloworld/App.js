@@ -1,7 +1,10 @@
 import {h} from '../../lib/guide-mini-vue.esm.js'
-
+import Foo from './Foo.js'
 window.self = null
 const App = {
+  components: {
+    Foo,
+  },
   //template
   render() {
     window.self = this
@@ -13,8 +16,11 @@ const App = {
           console.log('onMouseDown')
         }
       }, // this.$el, setupState, this.$data
-      'hi,' + this.msg
+      //'hi,' + this.msg
       //[h('p', {class: 'p1'}, 'hi p1'), h('p', {class: 'p2'}, 'hi p2')]
+      [h('div', {}, 'hi' + this.msg), h(Foo, {
+        name: 'guocheng'
+      })]
     );
   }, setup() {
     //composition api

@@ -1,4 +1,6 @@
 import {publicInstanceProxyHandlers} from "./componentPublicInstance";
+import {initProps} from "./componentProps";
+import {shallowReadonly} from "../reactivity/reactive";
 
 //生成组件实例
 export function createComponentInstance(vnode) {
@@ -7,7 +9,8 @@ export function createComponentInstance(vnode) {
     type: vnode.type,
     setupState: {},
     render: '',
-    proxy: ''
+    proxy: '',
+    props: {},
   }
   return component
 }
@@ -15,6 +18,7 @@ export function createComponentInstance(vnode) {
 //处理组件setup
 export function setupComponent(instance) {
   //initProps
+  initProps(instance, instance.vnode.props)
   //initSlots
   setupStatefulComponent(instance)
 }
@@ -27,7 +31,8 @@ function setupStatefulComponent(instance) {
   const {setup} = Component
   if (setup) {
     // function则是render函数 Object则是状态
-    const setupRes = setup()
+    //将props传入
+    const setupRes = setup(shallowReadonly(instance.props))
     handleSetupResult(instance, setupRes)
   }
 }
