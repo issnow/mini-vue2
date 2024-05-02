@@ -1,5 +1,8 @@
 import {ShapeFlags} from "../shared/shapeFlags";
 
+export const Fragment = Symbol('Fragment');
+export const Text = Symbol('Text');
+
 //将组件或元素转成vnode
 export function createVNode(type, props?, children?) {
   const vnode = {
@@ -18,8 +21,8 @@ export function createVNode(type, props?, children?) {
   }
 
   //处理组件无插槽
-  if(vnode.shapeFlag & ShapeFlags.stateful_component) {
-    if(typeof children === 'object') {
+  if (vnode.shapeFlag & ShapeFlags.stateful_component) {
+    if (typeof children === 'object') {
       vnode.shapeFlag |= ShapeFlags.slot_children
     }
   }
@@ -29,4 +32,8 @@ export function createVNode(type, props?, children?) {
 //设置vnode的flag
 function getShapeFlag(type) {
   return typeof type === 'string' ? ShapeFlags.element : ShapeFlags.stateful_component
+}
+
+export function createTextVNode(text) {
+  return createVNode(Text, {}, text)
 }

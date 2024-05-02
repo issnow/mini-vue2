@@ -1,6 +1,7 @@
 import {createComponentInstance, setupComponent} from "./component";
 //@ts-ignore
 import {ShapeFlags} from "../shared/shapeFlags";
+import {Fragment, Text} from "./vnode";
 
 //根据vnode和container渲染
 export function render(vnode, container) {
@@ -13,13 +14,34 @@ function patch(vnode, container) {
   //shapeFlags vnode-> flag
   //string -> element
   //object -> 组件
-  const {shapeFlag} = vnode
-  //判断是不是element类型
-  if (shapeFlag & ShapeFlags.element) {
-    processElement(vnode, container);
-  } else if (shapeFlag & ShapeFlags.stateful_component) {
-    processComponent(vnode, container)
+  const {shapeFlag, type} = vnode
+
+  //Fragment -> 只渲染children
+
+  switch (type) {
+    case Fragment:
+      processFragment(vnode, container)
+      break;
+    case Text:
+      processText(vnode, container)
+      break;
+    default:
+      //判断是不是element类型
+      if (shapeFlag & ShapeFlags.element) {
+        processElement(vnode, container);
+      } else if (shapeFlag & ShapeFlags.stateful_component) {
+        processComponent(vnode, container)
+      }
   }
+}
+
+function processFragment(vnode, container) {
+  mountChildren(vnode.children, container)
+}
+
+function processText(vnode, container) {
+  const text = vnode.el = document.createTextNode(vnode.children)
+  container.appendChild(text)
 }
 
 //处理元素类型
@@ -47,11 +69,11 @@ function mountElement(vnode, container) {
   }
   for (let prop in props) {
     //onclick -> click
-    const isOn = (key)=> /^on[A-Z]/.test(key)
-    if(isOn(prop)) {
+    const isOn = (key) => /^on[A-Z]/.test(key)
+    if (isOn(prop)) {
       const event = prop.substring(2).toLowerCase()
       el.addEventListener(event, props[prop])
-    }else {
+    } else {
       el.setAttribute(prop, props[prop])
     }
   }

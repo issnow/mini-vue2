@@ -22,7 +22,7 @@ const Foo = {
     const emitAdd = () => {
       console.log('emit add')
       emit('add', 123)
-      emit('add-foo', 2,3)
+      emit('add-foo', 2, 3)
     }
     return {
       emitAdd
