@@ -1,5 +1,6 @@
 const publicPropertiesMap = {
-  $el: (i) => i.vnode.el
+  $el: (i) => i.vnode.el,
+  $slots: (i) => i.slots
 }
 //将setup数据挂到render this上
 export const publicInstanceProxyHandlers = {

@@ -24,12 +24,13 @@ const App = {
         onAdd(v) {
           console.log('onAdd', v)
         },
-        onAddFoo(a,b){
-          console.log(a,b)
+        onAddFoo(a, b) {
+          console.log(a, b)
         }
       })]
     );
-  }, setup() {
+  },
+  setup() {
     //composition api
     return {
       msg: 'mini-vue~~'
