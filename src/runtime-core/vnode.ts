@@ -7,6 +7,7 @@ export const Text = Symbol('Text');
 export function createVNode(type, props?, children?) {
   const vnode = {
     type,
+    key: props && props.key,
     props,
     children,//'aa'; [h(), h()]
     //当前节点的容器元素

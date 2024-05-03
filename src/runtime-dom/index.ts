@@ -19,8 +19,9 @@ export function patchProp(el, prop, prevVal, nextVal) {
   }
 }
 
-export function insert(el, container) {
-  container.appendChild(el)
+export function insert(el, container, anchor) {
+  //container.appendChild(el)
+  container.insertBefore(el, anchor || null)
 }
 
 function remove(el) {
