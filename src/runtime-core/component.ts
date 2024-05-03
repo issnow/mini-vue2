@@ -3,6 +3,11 @@ import {initProps} from "./componentProps";
 import {shallowReadonly} from "../reactivity/reactive";
 import {emit} from "./componentEmit";
 import {initSlots} from "./componentSlots";
+import {proxyRefs} from "../reactivity";
+/*
+1.只有组件才有组件实例
+每个元素有对应的vnode
+ */
 
 //生成组件实例
 export function createComponentInstance(vnode, parent) {
@@ -14,12 +19,16 @@ export function createComponentInstance(vnode, parent) {
     setupState: {},
     render: '',
     proxy: '',
+    //mount update两阶段
+    isMounted: true,
     props: {},
     slots: {},
     emit: () => {
     },
     provides: parent ? parent.provides : {},
-    parent
+    parent,
+    //children节点
+    subtree: {}
   }
   instance.emit = emit.bind(null, instance) as any
   return instance
@@ -57,7 +66,8 @@ function handleSetupResult(instance, setupres) {
   // function则是render函数 Object则是状态
   // todo function
   if (typeof setupres === 'object') {
-    instance.setupState = setupres
+    //可以直接在template中使用数据,而不是.value获取
+    instance.setupState = proxyRefs(setupres)
   }
   finishComponentSetup(instance)
 }

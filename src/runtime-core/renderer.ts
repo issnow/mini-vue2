@@ -3,6 +3,7 @@ import {createComponentInstance, setupComponent} from "./component";
 import {ShapeFlags} from "../shared/shapeFlags";
 import {Fragment, Text} from "./vnode";
 import {createAppApi} from "./createApp";
+import {effect} from "../reactivity";
 
 //自定义渲染器,对于不同的宿主环境,是不同的api
 export function createReaderer(opt) {
@@ -11,54 +12,65 @@ export function createReaderer(opt) {
   //根据vnode和container渲染
   function render(vnode, container, parentInstance?) {
     //patch
-    patch(vnode, container, parentInstance)
+    patch(null,vnode, container, parentInstance)
   }
 
-  function patch(vnode, container, parentInstance) {
+  //n1 -> 旧的
+  //n2 -> 新的
+  function patch(n1,n2, container, parentInstance) {
     //去处理组件
     //shapeFlags vnode-> flag
     //string -> element
     //object -> 组件
-    const {shapeFlag, type} = vnode
+    const {shapeFlag, type} = n2
 
     //Fragment -> 只渲染children
 
     switch (type) {
       case Fragment:
-        processFragment(vnode, container, parentInstance)
+        processFragment(n1,n2, container, parentInstance)
         break;
       case Text:
-        processText(vnode, container)
+        processText(n1,n2, container)
         break;
       default:
         //判断是不是element类型
         if (shapeFlag & ShapeFlags.element) {
-          processElement(vnode, container, parentInstance);
+          processElement(n1,n2, container, parentInstance);
         } else if (shapeFlag & ShapeFlags.stateful_component) {
-          processComponent(vnode, container, parentInstance)
+          processComponent(n1,n2, container, parentInstance)
         }
     }
   }
 
-  function processFragment(vnode, container, parentInstance) {
-    mountChildren(vnode.children, container, parentInstance)
+  function processFragment(n1,n2, container, parentInstance) {
+    mountChildren(n2.children, container, parentInstance)
   }
 
-  function processText(vnode, container) {
-    const text = vnode.el = document.createTextNode(vnode.children)
+  function processText(n1,n2, container) {
+    const text = n2.el = document.createTextNode(n2.children)
     container.appendChild(text)
   }
 
 //处理元素类型
-  function processElement(vnode, container, parentInstance) {
-    //mount
-    mountElement(vnode, container, parentInstance)
-    //update
+  function processElement(n1,n2, container, parentInstance) {
+    if(!n1) {
+      //mount
+      mountElement(n2, container, parentInstance)
+    }else {
+      //update
+      patchElement(n1,n2, container)
+    }
   }
 
 //处理组件类型
-  function processComponent(vnode, container, parentInstance) {
-    mountComponent(vnode, container, parentInstance)
+  function processComponent(n1,n2, container, parentInstance) {
+    mountComponent(n2, container, parentInstance)
+  }
+  //vnode更新 对比新旧vnode
+  function patchElement(n1,n2, container){
+    console.log(n1)
+    console.log(n2)
   }
 
 //元素类型-mount阶段,构建dom,添加文本和属性,递归处理children
@@ -90,7 +102,7 @@ export function createReaderer(opt) {
 
   function mountChildren(children, container, parentInstance) {
     for (let node of children) {
-      patch(node, container, parentInstance)
+      patch(null,node, container, parentInstance)
     }
   }
 
@@ -103,14 +115,30 @@ export function createReaderer(opt) {
 
 //主要递归处理render内容,也就是subtree
   function setupRenderEffect(instance, vnode, container) {
-    const {proxy} = instance
-    const subtree = instance.render.call(proxy)
+    effect(() => {
+      if (instance.isMounted) {
+        //mount阶段
+        const {proxy} = instance
+        const subtree =instance.subtree =  instance.render.call(proxy)
 
-    //vnode -> patch
-    //vnode -> element -> mountElement
-    patch(subtree, container, instance)
-    //element mount之后
-    vnode.el = subtree.el
+        //vnode -> patch
+        //vnode -> element -> mountElement
+        patch(null,subtree, container, instance)
+        //element mount之后
+        vnode.el = subtree.el
+        instance.isMounted = false
+      } else {
+        //update阶段
+        const {proxy} = instance
+        const subtree = instance.render.call(proxy)
+        const prevSubtree = instance.subtree
+        instance.subtree = subtree
+
+        patch(prevSubtree,subtree, container, instance)
+
+      }
+
+    })
   }
 
   return {
