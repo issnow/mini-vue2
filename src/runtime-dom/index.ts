@@ -23,10 +23,20 @@ export function insert(el, container) {
   container.appendChild(el)
 }
 
+function remove(el) {
+  el.remove()
+}
+
+function setElementText(el, text) {
+  el.textContent = text
+}
+
 export const renderer: any = createReaderer({
   createElement,
   patchProp,
-  insert
+  insert,
+  remove,
+  setElementText
 })
 
 export function createApp(...arr) {

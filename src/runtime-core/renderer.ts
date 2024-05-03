@@ -8,7 +8,7 @@ import {empty_obj} from "../shared";
 
 //自定义渲染器,对于不同的宿主环境,是不同的api
 export function createReaderer(opt) {
-  const {createElement, patchProp, insert} = opt;
+  const {createElement, patchProp, insert, remove, setElementText} = opt;
 
   //根据vnode和container渲染
   function render(vnode, container, parentInstance?) {
@@ -60,7 +60,7 @@ export function createReaderer(opt) {
       mountElement(n2, container, parentInstance)
     } else {
       //update
-      patchElement(n1, n2, container)
+      patchElement(n1, n2, container, parentInstance)
     }
   }
 
@@ -70,7 +70,7 @@ export function createReaderer(opt) {
   }
 
   //vnode更新 对比新旧vnode
-  function patchElement(n1, n2, container) {
+  function patchElement(n1, n2, container, parentInstance) {
     console.log(n1)
     console.log(n2)
     const oldProps = n1.props || empty_obj
@@ -78,8 +78,43 @@ export function createReaderer(opt) {
     const el = n2.el = n1.el
     //props改变
     patchProps(el, oldProps, newProps)
+    //chidlren改变
+    patchChildren(el, n1, n2, parentInstance)
   }
 
+  function patchChildren(el, n1, n2, parentInstance) {
+    const {shapeFlag: oldShapeFlag, children: oldChildren} = n1
+    const {shapeFlag, children} = n2
+    //节点的children改变
+    //情况1:array -> text
+    if (shapeFlag & ShapeFlags.text_children) {
+      if (oldShapeFlag & ShapeFlags.array_children) {
+        //1.把老的children清空
+        unmountChildren(n1.children)
+        //2.设置新的文本text
+        setElementText(el, n2.children)
+      } else {
+        //情况2:text -> text
+        if (oldChildren !== children) {
+          //2.直接设置新的文本text
+          setElementText(el, n2.children)
+        }
+      }
+    } else {
+      //情况3:array -> array
+      if (oldShapeFlag & ShapeFlags.array_children) {
+
+      } else {
+        //情况4:text -> array
+        setElementText(el, '')
+        mountChildren(n2.children, el, parentInstance)
+      }
+    }
+  }
+
+  function unmountChildren(children) {
+    children.forEach(child => remove(child.el))
+  }
 
   function patchProps(el, oldProps, newProps) {
     if (oldProps !== newProps) {
@@ -160,9 +195,7 @@ export function createReaderer(opt) {
         const subtree = instance.render.call(proxy)
         const prevSubtree = instance.subtree
         instance.subtree = subtree
-
         patch(prevSubtree, subtree, container, instance)
-
       }
 
     })

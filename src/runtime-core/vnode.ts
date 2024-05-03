@@ -9,6 +9,7 @@ export function createVNode(type, props?, children?) {
     type,
     props,
     children,//'aa'; [h(), h()]
+    //当前节点的容器元素
     el: null,
     //表示当前vnode的类型以及children的类型
     shapeFlag: getShapeFlag(type)
