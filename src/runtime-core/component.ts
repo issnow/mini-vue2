@@ -5,7 +5,8 @@ import {emit} from "./componentEmit";
 import {initSlots} from "./componentSlots";
 
 //生成组件实例
-export function createComponentInstance(vnode) {
+export function createComponentInstance(vnode, parent) {
+  console.log("parent", parent)
   const instance = {
     vnode,
     //对于组件来说type就是大对象,对于元素来说,type就是字符串,例'div'
@@ -17,6 +18,8 @@ export function createComponentInstance(vnode) {
     slots: {},
     emit: () => {
     },
+    provides: parent ? parent.provides : {},
+    parent
   }
   instance.emit = emit.bind(null, instance) as any
   return instance

@@ -1,8 +1,18 @@
-import {h, createTextVNode, getCurrentInstance} from '../../lib/guide-mini-vue.esm.js'
+import {h, createTextVNode, getCurrentInstance, provide} from '../../lib/guide-mini-vue.esm.js'
 import Foo from './Foo1.js'
 /*
 1.实现slot功能
  */
+
+const Second = {
+  name: 'second',
+  render(){
+    return h('div',{},[h('div',{},'Second'),h(Foo)])
+  },
+  setup(){
+    //provide('color', 'blue')
+  }
+}
 
 window.self = null
 const App = {
@@ -21,11 +31,13 @@ const App = {
       body: () => h('p', {}, 'body')
     })
 
-    return h('div', {}, [app, foo])
+    //return h('div', {}, [app, foo])
+    return h('div', {}, [h('p',{},"App1"), h(Second)])
   },
   setup() {
     const instance = getCurrentInstance()
-    console.log('instance', instance)
+    //console.log('instance', instance)
+    provide('color', 'red')
     return {}
   }
 }
