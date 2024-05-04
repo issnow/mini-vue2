@@ -7,6 +7,10 @@ import {ElementTypes, NodeTypes} from "./ast";
 简单理解就是有限状态机用来描述对象的状态，以及响应外界变化所经历的状态序列变迁过程。
 当对象的状态数量较多、状态变更比较复杂时，有限状态机能很好的描述整个过程。如果将状态单独抽象出来并构建成状态机，状态的变更都遵循状态机的描述，那么对象的状态及其变更过程就会可读性很强、更直观、更易维护。
 
+解析template流程:
+template -> parse -> transform -> generate
+template经过parse得到ast,再经过transform得到ast,再经过generate得到render()函数
+
 <div>name{{abc}}</div>
 1.解析插值
 2.解析element
