@@ -7,6 +7,7 @@ import {effect} from "../reactivity";
 import {empty_obj} from "../shared";
 import {insert} from "../runtime-dom";
 import {shouldUpdateComponent} from "./componentUpdateUtils";
+import {queueJobs} from "./scheduler";
 
 //自定义渲染器,对于不同的宿主环境,是不同的api
 export function createReaderer(opt) {
@@ -363,6 +364,12 @@ export function createReaderer(opt) {
         const prevSubtree = instance.subtree
         instance.subtree = subtree
         patch(prevSubtree, subtree, container, instance, anchor)
+      }
+    }, {
+      //scheduler优先比第一个fn执行
+      scheduler(){
+        console.log('update-scheduler')
+        queueJobs(instance.update)
       }
     })
   }
