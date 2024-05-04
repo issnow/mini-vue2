@@ -1,8 +1,8 @@
 export enum NodeTypes {
-  INTERPOLATION,
-  SIMPLE_EXPRESSION,
-  ELEMENT,
-  TEXT
+  INTERPOLATION,//插值
+  SIMPLE_EXPRESSION,//具体的插值表达式
+  ELEMENT,//element
+  TEXT//文本
 }
 export enum ElementTypes {
   ELEMENT

@@ -73,57 +73,87 @@ describe("parser", () => {
         //    content: "hello",
         //  },
         //],
+        children: []
       });
     });
 
-    //  test("element with interpolation", () => {
-    //    const ast = baseParse("<div>{{ msg }}</div>");
-    //    const element = ast.children[0];
-    //
-    //    expect(element).toStrictEqual({
-    //      type: NodeTypes.ELEMENT,
-    //      tag: "div",
-    //      tagType: ElementTypes.ELEMENT,
-    //      children: [
-    //        {
-    //          type: NodeTypes.INTERPOLATION,
-    //          content: {
-    //            type: NodeTypes.SIMPLE_EXPRESSION,
-    //            content: `msg`,
-    //          },
-    //        },
-    //      ],
-    //    });
-    //  });
-    //
-    //  test("element with interpolation and text", () => {
-    //    const ast = baseParse("<div>hi,{{ msg }}</div>");
-    //    const element = ast.children[0];
-    //
-    //    expect(element).toStrictEqual({
-    //      type: NodeTypes.ELEMENT,
-    //      tag: "div",
-    //      tagType: ElementTypes.ELEMENT,
-    //      children: [
-    //        {
-    //          type: NodeTypes.TEXT,
-    //          content: "hi,",
-    //        },
-    //        {
-    //          type: NodeTypes.INTERPOLATION,
-    //          content: {
-    //            type: NodeTypes.SIMPLE_EXPRESSION,
-    //            content: "msg",
-    //          },
-    //        },
-    //      ],
-    //    });
-    //  });
-    //
-    //  test("should throw error when lack end tag  ", () => {
-    //    expect(() => {
-    //      baseParse("<div><span></div>");
-    //    }).toThrow("缺失结束标签：span");
-    //  });
+      test("element with interpolation", () => {
+        const ast = baseParse("<div>{{ msg }}</div>");
+        const element = ast.children[0];
+
+        expect(element).toStrictEqual({
+          type: NodeTypes.ELEMENT,
+          tag: "div",
+          //tagType: ElementTypes.ELEMENT,
+          children: [
+            {
+              type: NodeTypes.INTERPOLATION,
+              content: {
+                type: NodeTypes.SIMPLE_EXPRESSION,
+                content: `msg`,
+              },
+            },
+          ],
+        });
+      });
+
+    test("element with interpolation and text", () => {
+      const ast = baseParse("<div>hi,{{ msg }}</div>");
+      const element = ast.children[0];
+
+      expect(element).toStrictEqual({
+        type: NodeTypes.ELEMENT,
+        tag: "div",
+        //tagType: ElementTypes.ELEMENT,
+        children: [
+          {
+            type: NodeTypes.TEXT,
+            content: "hi,",
+          },
+          {
+            type: NodeTypes.INTERPOLATION,
+            content: {
+              type: NodeTypes.SIMPLE_EXPRESSION,
+              content: "msg",
+            },
+          },
+        ],
+      });
+    });
+    test("element with interpolation and text2", () => {
+      const ast = baseParse("<div><p>hi</p>{{ msg }}</div>");
+      const element = ast.children[0];
+
+      expect(element).toStrictEqual({
+        type: NodeTypes.ELEMENT,
+        tag: "div",
+        //tagType: ElementTypes.ELEMENT,
+        children: [
+          {
+            type: NodeTypes.ELEMENT,
+            tag: "p",
+            children: [
+              {
+                type: NodeTypes.TEXT,
+                content: "hi",
+              },
+            ]
+          },
+          {
+            type: NodeTypes.INTERPOLATION,
+            content: {
+              type: NodeTypes.SIMPLE_EXPRESSION,
+              content: "msg",
+            },
+          },
+        ],
+      });
+    });
+
+    test("should throw error when lack end tag  ", () => {
+      expect(() => {
+        baseParse("<div><span></div>");
+      }).toThrow("缺少结束标签:span");
+    });
   });
 });
