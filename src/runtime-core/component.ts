@@ -28,7 +28,8 @@ export function createComponentInstance(vnode, parent) {
     provides: parent ? parent.provides : {},
     parent,
     //children节点
-    subtree: {}
+    subtree: {},
+    next: null,//下次更新的虚拟节点
   }
   instance.emit = emit.bind(null, instance) as any
   return instance

@@ -13,7 +13,8 @@ export function createVNode(type, props?, children?) {
     //当前节点的容器元素
     el: null,
     //表示当前vnode的类型以及children的类型
-    shapeFlag: getShapeFlag(type)
+    shapeFlag: getShapeFlag(type),
+    component: null,//表示组件实例(主要是组件的vnode对应的instance)
   }
   //children
   if (typeof children === 'string') {

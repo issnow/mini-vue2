@@ -6,6 +6,7 @@ import {createAppApi} from "./createApp";
 import {effect} from "../reactivity";
 import {empty_obj} from "../shared";
 import {insert} from "../runtime-dom";
+import {shouldUpdateComponent} from "./componentUpdateUtils";
 
 //自定义渲染器,对于不同的宿主环境,是不同的api
 export function createReaderer(opt) {
@@ -70,12 +71,22 @@ export function createReaderer(opt) {
       patchElement(n1, n2, container, parentInstance, anchor)
     }
   }
-
-//处理组件类型
-  function processComponent(n1, n2, container, parentInstance, anchor) {
-    mountComponent(n2, container, parentInstance, anchor)
+  //元素类型-mount阶段,构建dom,添加文本和属性,递归处理children
+  function mountElement(vnode, container, parentInstance, anchor) {
+    //element
+    const el = vnode.el = createElement(vnode.type)
+    const {props, children, shapeFlag} = vnode
+    //children text 或者 array
+    if (shapeFlag & ShapeFlags.text_children) {
+      el.textContent = children
+    } else if (shapeFlag & ShapeFlags.array_children) {
+      mountChildren(children, el, parentInstance, anchor)
+    }
+    for (let prop in props) {
+      patchProp(el, prop, null, props[prop])
+    }
+    insert(el, container, anchor)
   }
-
   //vnode更新 对比新旧vnode
   function patchElement(n1, n2, container, parentInstance, anchor) {
     console.log(n1)
@@ -88,7 +99,6 @@ export function createReaderer(opt) {
     //children改变
     patchChildren(el, n1, n2, parentInstance, anchor)
   }
-
   function patchChildren(el, n1, n2, parentInstance, anchor) {
     const {shapeFlag: oldShapeFlag, children: oldChildren} = n1
     const {shapeFlag, children} = n2
@@ -258,6 +268,12 @@ export function createReaderer(opt) {
     }
   }
 
+
+
+
+
+
+
   function unmountChildren(children) {
     children.forEach(child => remove(child.el))
   }
@@ -282,22 +298,7 @@ export function createReaderer(opt) {
     }
   }
 
-//元素类型-mount阶段,构建dom,添加文本和属性,递归处理children
-  function mountElement(vnode, container, parentInstance, anchor) {
-    //element
-    const el = vnode.el = createElement(vnode.type)
-    const {props, children, shapeFlag} = vnode
-    //children text 或者 array
-    if (shapeFlag & ShapeFlags.text_children) {
-      el.textContent = children
-    } else if (shapeFlag & ShapeFlags.array_children) {
-      mountChildren(children, el, parentInstance, anchor)
-    }
-    for (let prop in props) {
-      patchProp(el, prop, null, props[prop])
-    }
-    insert(el, container, anchor)
-  }
+
 
   function mountChildren(children, container, parentInstance, anchor) {
     for (let node of children) {
@@ -305,16 +306,39 @@ export function createReaderer(opt) {
     }
   }
 
-//组件类型-生成实例,处理数据
+  //处理组件类型
+  function processComponent(n1, n2, container, parentInstance, anchor) {
+    if(!n1) {
+      //mount
+      mountComponent(n2, container, parentInstance, anchor)
+    }else {
+      //update
+      updateComponent(n1, n2, container, parentInstance, anchor)
+    }
+  }
+
+//mount组件:组件类型-生成实例,处理数据
   function mountComponent(vnode, container, parentInstance, anchor) {
-    const instance = createComponentInstance(vnode, parentInstance)
+    const instance = vnode.component =  createComponentInstance(vnode, parentInstance)
     setupComponent(instance)
     setupRenderEffect(instance, vnode, container, anchor)
   }
 
+  //更新组件
+  function updateComponent(n1, n2, container, parentInstance, anchor) {
+    const instance = n2.component = n1.component
+    if(shouldUpdateComponent(n1, n2)) {
+      instance.next = n2
+      instance.update()
+    }else {
+      n2.el = n1.el
+      instance.vnode = n2
+    }
+  }
+
 //主要递归处理render内容,也就是subtree
   function setupRenderEffect(instance, vnode, container, anchor) {
-    effect(() => {
+    instance.update = effect(() => {
       if (instance.isMounted) {
         //mount阶段
         const {proxy} = instance
@@ -328,6 +352,12 @@ export function createReaderer(opt) {
         instance.isMounted = false
       } else {
         //update阶段
+        //需要一个vnode
+        const {next, vnode} = instance
+        if(next) {
+          next.el = vnode.el
+          updateComponentPrerender(instance, next)
+        }
         const {proxy} = instance
         const subtree = instance.render.call(proxy)
         const prevSubtree = instance.subtree
@@ -341,7 +371,11 @@ export function createReaderer(opt) {
     createApp: createAppApi(render)
   }
 }
-
+function updateComponentPrerender(instance,nextVnode){
+  instance.vnode = nextVnode
+  instance.next = null
+  instance.props = nextVnode.props
+}
 function getSequence(arr: number[]): number[] {
   const p = arr.slice();
   const result = [0];

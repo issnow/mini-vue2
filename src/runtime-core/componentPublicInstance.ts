@@ -1,6 +1,8 @@
 const publicPropertiesMap = {
+  //访问组件的$el,$slots,$props,就直接访问组件实例上的属性
   $el: (i) => i.vnode.el,
-  $slots: (i) => i.slots
+  $slots: (i) => i.slots,
+  $props: (i) => i.props
 }
 //将setup数据挂到render this上
 export const publicInstanceProxyHandlers = {
