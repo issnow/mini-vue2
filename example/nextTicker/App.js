@@ -1,4 +1,4 @@
-import {h, ref, nextTick,getCurrentInstance} from "../../lib/guide-mini-vue.esm.js";
+import {h, ref, nextTick, getCurrentInstance} from "../../lib/guide-mini-vue.esm.js";
 import NextTicker from "./NextTicker.js";
 
 export default {
@@ -10,9 +10,8 @@ export default {
       for (let i = 0; i < 100; i++) {
         count.value = i
       }
-      debugger
       console.log(ins);
-      nextTick(()=>{
+      nextTick(() => {
         console.log(ins);
       })
     }
